@@ -3,65 +3,140 @@ import sys
 import os
 import subprocess
 import time
+import threading
 from utils import C, open_url
-from config import VERSION, GITHUB_REPO, RAW_VERSION_URL, TELEGRAM_CHANNEL
+from config import VERSION, GITHUB_REPO, RAW_VERSION_URL, TELEGRAM_CHANNEL, TOOL_NAME
 
 # ============================================
 # AUTO UPDATER
 # ============================================
 
-def fetch_latest_version():
-    """Fetch latest version string from GitHub raw config.py"""
-    try:
-        import urllib.request
-        with urllib.request.urlopen(RAW_VERSION_URL, timeout=6) as resp:
-            content = resp.read().decode("utf-8")
-        match = re.search(r'VERSION\s*=\s*["\']([^"\']+)["\']', content)
-        if match:
-            return match.group(1)
-    except Exception:
-        pass
-    return None
+def _box(content, width=50, border_color=C.CYAN):
+    """Print a single box row."""
+    import re as _re
+    ansi = _re.compile(r'\033\[[0-9;]*m')
+    clean = ansi.sub('', content)
+    pad = width - len(clean)
+    if pad < 0: pad = 0
+    print(f"{border_color}│{C.RESET} {content}{' ' * pad}{border_color}│{C.RESET}")
+
+
+def _box_top(width=50, border_color=C.CYAN):
+    print(f"{border_color}╔{'═' * width}╗{C.RESET}")
+
+def _box_mid(width=50, border_color=C.CYAN):
+    print(f"{border_color}╠{'═' * width}╣{C.RESET}")
+
+def _box_bot(width=50, border_color=C.CYAN):
+    print(f"{border_color}╚{'═' * width}╝{C.RESET}")
+
+
+def _spinner_check():
+    """Show spinner box while checking. Returns (latest_version, elapsed)."""
+    frames  = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    result  = [None]
+    done    = [False]
+    width   = 50
+
+    def fetch():
+        try:
+            import urllib.request
+            with urllib.request.urlopen(RAW_VERSION_URL, timeout=6) as resp:
+                content = resp.read().decode("utf-8")
+            match = re.search(r'VERSION\s*=\s*["\']([^"\']+)["\']', content)
+            if match:
+                result[0] = match.group(1)
+        except Exception:
+            pass
+        done[0] = True
+
+    t = threading.Thread(target=fetch, daemon=True)
+    t.start()
+
+    print()
+    _box_top(width)
+    i = 0
+    while not done[0]:
+        frame   = frames[i % len(frames)]
+        content = f"{C.CYAN}Checking for updates...{C.RESET}  {C.YELLOW}{frame}{C.RESET}"
+        # Overwrite same line inside box
+        import re as _re
+        ansi = _re.compile(r'\033\[[0-9;]*m')
+        clean = _re.sub(r'\033\[[0-9;]*m', '', f"Checking for updates...  {frame}")
+        pad   = width - len(clean)
+        line  = f"{C.CYAN}│{C.RESET} {C.CYAN}Checking for updates...{C.RESET}  {C.YELLOW}{frame}{C.RESET}{' ' * pad}{C.CYAN}│{C.RESET}"
+        print(f"\r{line}", end="", flush=True)
+        time.sleep(0.1)
+        i += 1
+
+    # Clear spinner line
+    print(f"\r{C.CYAN}│{C.RESET} {C.CYAN}Checking for updates...{C.RESET}  {C.GREEN}✓{C.RESET}{' ' * (width - len('Checking for updates...  ✓'))}{C.CYAN}│{C.RESET}")
+
+    t.join()
+    return result[0]
+
+
+def _show_status_box(latest):
+    """Show result box after check."""
+    width = 50
+    _box_mid(width)
+    if latest is None:
+        _box(f"{C.YELLOW}[!]{C.RESET} Could not reach GitHub", width)
+    elif version_tuple(latest) > version_tuple(VERSION):
+        _box(f"{C.GREEN}[↑]{C.RESET} New version found!  {C.YELLOW}v{VERSION} → v{latest}{C.RESET}", width)
+    else:
+        _box(f"{C.GREEN}[✓]{C.RESET} Up to date  {C.DIM}(v{VERSION}){C.RESET}", width)
+    _box_bot(width)
+
+
+def _show_telegram_box():
+    """Show Telegram channel box with countdown."""
+    width = 50
+    print()
+    _box_top(width)
+    _box(f"{C.YELLOW}Join our Telegram Channel!{C.RESET}", width)
+    _box(f"{C.CYAN}{TELEGRAM_CHANNEL}{C.RESET}", width)
+    _box_mid(width)
+
+    open_url(TELEGRAM_CHANNEL)
+
+    for i in range(3, 0, -1):
+        line = f"{C.DIM}Opening... Going to menu in {C.RESET}{C.YELLOW}{i}s{C.RESET}"
+        import re as _re
+        clean = _re.sub(r'\033\[[0-9;]*m', '', f"Opening... Going to menu in {i}s")
+        pad   = width - len(clean)
+        print(f"\r{C.CYAN}│{C.RESET} {line}{' ' * pad}{C.CYAN}│{C.RESET}", end="", flush=True)
+        time.sleep(1)
+
+    print(f"\r{C.CYAN}│{C.RESET} {C.DIM}Opening... Going to menu in {C.RESET}{C.GREEN}now!{C.RESET}{' ' * (width - len('Opening... Going to menu in now!'))}{C.CYAN}│{C.RESET}")
+    _box_bot(width)
+    print()
 
 
 def version_tuple(v):
     return tuple(int(x) for x in v.strip().split("."))
 
 
-def open_telegram_then_continue():
-    """Open Telegram channel then proceed to main menu."""
-    print(f"\n{C.CYAN}{'─' * 52}{C.RESET}")
-    print(f"  {C.YELLOW}Join our Telegram Channel for updates!{C.RESET}")
-    print(f"  {C.CYAN}{TELEGRAM_CHANNEL}{C.RESET}")
-    print(f"{C.CYAN}{'─' * 52}{C.RESET}")
-    print(f"\n{C.DIM}  Opening channel... Going to menu in 3s{C.RESET}")
-
-    open_url(TELEGRAM_CHANNEL)
-    time.sleep(3)
-
-
 def check_and_update():
-    print(f"\n{C.CYAN}[~]{C.RESET} Checking for updates...")
+    latest = _spinner_check()
+    _show_status_box(latest)
 
-    latest = fetch_latest_version()
-
-    if latest is None:
-        print(f"{C.YELLOW}[!]{C.RESET} Could not reach GitHub. Skipping update check.\n")
-        open_telegram_then_continue()
-        return
-
-    if version_tuple(latest) > version_tuple(VERSION):
-        print(f"{C.GREEN}[+]{C.RESET} New version found: {C.YELLOW}v{latest}{C.RESET}  (current: v{VERSION})")
-        print(f"{C.CYAN}[~]{C.RESET} Auto-updating HostX...\n")
-        _do_update()
+    if latest is not None and version_tuple(latest) > version_tuple(VERSION):
+        _show_telegram_box()
+        _do_update(latest)
     else:
-        print(f"{C.GREEN}[✓]{C.RESET} HostX is up to date. (v{VERSION})\n")
-        open_telegram_then_continue()
+        _show_telegram_box()
 
 
-def _do_update():
+def _do_update(latest):
     """Pull latest files from GitHub using git."""
+    width    = 50
     tool_dir = os.path.dirname(os.path.abspath(__file__))
+
+    print()
+    _box_top(width)
+    _box(f"{C.CYAN}Auto-updating {TOOL_NAME}...{C.RESET}", width)
+    _box_mid(width)
 
     if _has_git(tool_dir):
         result = subprocess.run(
@@ -71,23 +146,20 @@ def _do_update():
             text=True
         )
         if result.returncode == 0:
-            print(f"{C.GREEN}[+]{C.RESET} Update successful via git!\n")
-            print(f"{C.YELLOW}[!]{C.RESET} Restarting HostX...\n")
-            open_telegram_then_continue()
+            _box(f"{C.GREEN}[✓]{C.RESET} Update successful!", width)
+            _box(f"{C.YELLOW}[!]{C.RESET} Restarting HostX...", width)
+            _box_bot(width)
+            time.sleep(2)
             os.execv(sys.executable, [sys.executable] + sys.argv)
         else:
-            print(f"{C.RED}[x]{C.RESET} git pull failed:\n{result.stderr}")
-            _manual_update_notice()
+            _box(f"{C.RED}[x]{C.RESET} git pull failed. Update manually.", width)
+            _box_bot(width)
+            input(f"\n{C.DIM}  Press Enter to continue...{C.RESET}")
     else:
-        _manual_update_notice()
+        _box(f"{C.YELLOW}[!]{C.RESET} No .git folder. Re-clone from GitHub.", width)
+        _box_bot(width)
+        input(f"\n{C.DIM}  Press Enter to continue...{C.RESET}")
 
 
 def _has_git(path):
     return os.path.isdir(os.path.join(path, ".git"))
-
-
-def _manual_update_notice():
-    print(f"{C.YELLOW}[!]{C.RESET} Auto-update failed. Please update manually:")
-    print(f"    {C.CYAN}git pull{C.RESET}  or re-clone from GitHub.\n")
-    input(f"{C.DIM}Press Enter to continue...{C.RESET}\n")
-    open_telegram_then_continue()
