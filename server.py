@@ -98,7 +98,11 @@ def start_server():
         port = DEFAULT_PORT
 
     # --- Start server in background thread ---
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=folder)
+    class _SilentHandler(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, format, *args): pass  # Suppress logs
+        def log_error(self, format, *args): pass
+
+    handler = functools.partial(_SilentHandler, directory=folder)
 
     try:
         httpd = http.server.HTTPServer(("0.0.0.0", port), handler)
