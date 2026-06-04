@@ -14,6 +14,12 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## 🗑️ Uninstall
+
+```bash
+rm -rf HostX
+```
+
 ---
 
 ## ⚙️ Features
@@ -23,6 +29,8 @@ python main.py
 - ✅ LAN IP support (accessible from any device on same WiFi)
 - ✅ QR Code display in terminal
 - ✅ Custom port selection
+- ✅ Custom hostname support
+- ✅ Stop Server from menu
 - ✅ Colorful Termux UI + ASCII Banner
 - ✅ Developer Info panel
 
