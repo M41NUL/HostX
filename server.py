@@ -73,21 +73,23 @@ def start_server():
 
     print(f"\n{C.CYAN}{'─' * 52}{C.RESET}")
     print(f"{C.YELLOW}{C.BOLD}  Start Local Server{C.RESET}")
-    print(f"{C.CYAN}{'─' * 52}{C.RESET}\n")
+    print(f"{C.CYAN}{'─' * 52}{C.RESET}")
 
     # --- Folder path ---
-    print(f"{C.WHITE}  Folder path (Enter for /sdcard): {C.RESET}", end="")
+    print(f"  {C.DIM}Example : /sdcard/mysite  |  /sdcard/Download/web{C.RESET}")
+    print(f"  {C.WHITE}Folder path (Enter for /sdcard): {C.RESET}", end="")
     folder = input().strip()
     if not folder:
         folder = DEFAULT_DIR
 
     if not os.path.isdir(folder):
-        print(f"\n{C.RED}[x]{C.RESET} Folder not found: {folder}\n")
+        print(f"\n{C.RED}[x]{C.RESET} Folder not found: {C.YELLOW}{folder}{C.RESET}\n")
         input(f"{C.DIM}  Press Enter to go back...{C.RESET}")
         return
 
     # --- Port ---
-    print(f"{C.WHITE}  Port (Enter for {DEFAULT_PORT}): {C.RESET}", end="")
+    print(f"  {C.DIM}Example : 8080  |  3000  |  5500{C.RESET}")
+    print(f"  {C.WHITE}Port (Enter for {DEFAULT_PORT}): {C.RESET}", end="")
     port_input = input().strip()
     try:
         port = int(port_input) if port_input else DEFAULT_PORT
