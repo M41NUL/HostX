@@ -1,7 +1,6 @@
 import os
 import sys
-import webbrowser
-from utils import C, print_line, clear
+from utils import C, print_line, clear, open_url
 from config import TELEGRAM_CHANNEL, TOOL_NAME, VERSION, AUTHOR, OWNER, GITHUB_URL, TELEGRAM_GROUP, EMAIL, YOUTUBE, WHATSAPP, TELEGRAM, COPYRIGHT
 
 # ============================================
@@ -129,7 +128,7 @@ def do_exit():
     print(f"  {C.YELLOW}{TELEGRAM_CHANNEL}{C.RESET}\n")
 
     try:
-        webbrowser.open(TELEGRAM_CHANNEL)
+        open_url(TELEGRAM_CHANNEL)
     except Exception:
         pass
 

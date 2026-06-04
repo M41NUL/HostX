@@ -3,15 +3,14 @@ import socket
 import threading
 import http.server
 import functools
-from utils import C, print_line
+from utils import C
 
 # ============================================
 # LOCAL WEB SERVER
 # ============================================
 
-DEFAULT_PORT     = 8080
-DEFAULT_DIR      = "/sdcard"
-DEFAULT_HOSTNAME = "localhost"
+DEFAULT_PORT = 8080
+DEFAULT_DIR  = "/sdcard"
 
 # Global server instance for stop support
 _server_instance = None
@@ -98,12 +97,6 @@ def start_server():
         print(f"\n{C.YELLOW}[!]{C.RESET} Invalid port. Using {DEFAULT_PORT}.\n")
         port = DEFAULT_PORT
 
-    # --- Custom hostname ---
-    print(f"{C.WHITE}  Custom hostname (Enter for localhost): {C.RESET}", end="")
-    hostname = input().strip()
-    if not hostname:
-        hostname = DEFAULT_HOSTNAME
-
     # --- Start server in background thread ---
     handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=folder)
 
@@ -118,13 +111,12 @@ def start_server():
     _server_thread   = threading.Thread(target=httpd.serve_forever, daemon=True)
     _server_thread.start()
 
-    local_ip   = get_local_ip()
-    local_url  = f"http://{hostname}:{port}"
-    lan_url    = f"http://{local_ip}:{port}"
+    local_ip  = get_local_ip()
+    local_url = f"http://localhost:{port}"
+    lan_url   = f"http://{local_ip}:{port}"
 
     print(f"\n{C.GREEN}[+]{C.RESET} Server started!\n")
     print(f"  {C.CYAN}Folder   :{C.RESET} {folder}")
-    print(f"  {C.CYAN}Hostname :{C.RESET} {hostname}")
     print(f"  {C.CYAN}Local    :{C.RESET} {C.YELLOW}{local_url}{C.RESET}")
     print(f"  {C.CYAN}LAN      :{C.RESET} {C.YELLOW}{lan_url}{C.RESET}")
 

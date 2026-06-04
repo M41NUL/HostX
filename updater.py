@@ -3,8 +3,7 @@ import sys
 import os
 import subprocess
 import time
-import webbrowser
-from utils import C, print_line
+from utils import C, open_url
 from config import VERSION, GITHUB_REPO, RAW_VERSION_URL, TELEGRAM_CHANNEL
 
 # ============================================
@@ -37,11 +36,7 @@ def open_telegram_then_continue():
     print(f"{C.CYAN}{'─' * 52}{C.RESET}")
     print(f"\n{C.DIM}  Opening channel... Going to menu in 3s{C.RESET}")
 
-    try:
-        webbrowser.open(TELEGRAM_CHANNEL)
-    except Exception:
-        pass
-
+    open_url(TELEGRAM_CHANNEL)
     time.sleep(3)
 
 
@@ -65,7 +60,7 @@ def check_and_update():
 
 
 def _do_update():
-    """Pull latest files from GitHub using git or wget fallback."""
+    """Pull latest files from GitHub using git."""
     tool_dir = os.path.dirname(os.path.abspath(__file__))
 
     if _has_git(tool_dir):

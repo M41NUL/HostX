@@ -52,3 +52,18 @@ def box_line(content, width=50, border_color=C.CYAN, text_color=C.WHITE):
     if padding < 0:
         padding = 0
     print(f"{border_color}│{C.RESET} {text_color}{content}{' ' * padding}{border_color}│{C.RESET}")
+
+
+def open_url(url):
+    """Open URL in Termux using termux-open-url, fallback to webbrowser."""
+    import subprocess
+    import webbrowser
+    try:
+        result = subprocess.run(["termux-open-url", url], timeout=5)
+        if result.returncode != 0:
+            raise Exception("termux-open-url failed")
+    except Exception:
+        try:
+            webbrowser.open(url)
+        except Exception:
+            pass
