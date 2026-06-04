@@ -1,4 +1,4 @@
-from utils import C, print_line, box_line
+from utils import C, print_line, box_line, get_tw
 from config import (
     TOOL_NAME, TOOL_SLOGAN, VERSION,
     AUTHOR, OWNER, GITHUB_URL,
@@ -28,7 +28,7 @@ def show_banner():
 
 
 def show_info_box():
-    w = 50  # inner width (between │ and │)
+    w = get_tw()  # inner width (between │ and │)
     border = C.CYAN
     label = C.YELLOW + C.BOLD
     val   = C.WHITE

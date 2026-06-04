@@ -1,6 +1,6 @@
 import os
 import sys
-from utils import C, print_line, clear, open_url
+from utils import C, print_line, clear, open_url, get_tw
 from config import TELEGRAM_CHANNEL, TOOL_NAME, VERSION, AUTHOR, OWNER, GITHUB_URL, TELEGRAM_GROUP, EMAIL, YOUTUBE, WHATSAPP, TELEGRAM, COPYRIGHT
 
 # ============================================
@@ -31,7 +31,7 @@ def show_menu():
     from server import is_server_running
     running = is_server_running()
 
-    w      = 50
+    w = get_tw()
     border = C.CYAN
 
     print(f"{border}╔{'═' * w}╗{C.RESET}")
@@ -83,7 +83,7 @@ def handle_menu(choice):
 
 def show_dev_info():
     clear()
-    w      = 50
+    w = get_tw()
     border = C.CYAN
     label  = C.YELLOW + C.BOLD
     val    = C.WHITE

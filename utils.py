@@ -67,3 +67,11 @@ def open_url(url):
             webbrowser.open(url)
         except Exception:
             pass
+
+
+def get_tw():
+    """Get terminal width dynamically."""
+    try:
+        return max(40, os.get_terminal_size().columns - 2)
+    except Exception:
+        return 50

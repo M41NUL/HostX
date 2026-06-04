@@ -4,14 +4,15 @@ import os
 import subprocess
 import time
 import threading
-from utils import C, open_url
+from utils import C, open_url, get_tw
 from config import VERSION, GITHUB_REPO, RAW_VERSION_URL, TELEGRAM_CHANNEL, TOOL_NAME
 
 # ============================================
 # AUTO UPDATER
 # ============================================
 
-def _box(content, width=50, border_color=C.CYAN):
+def _box(content, width=None, border_color=C.CYAN):
+    if width is None: width = get_tw()
     """Print a single box row."""
     import re as _re
     ansi = _re.compile(r'\033\[[0-9;]*m')
@@ -21,13 +22,16 @@ def _box(content, width=50, border_color=C.CYAN):
     print(f"{border_color}│{C.RESET} {content}{' ' * pad}{border_color}│{C.RESET}")
 
 
-def _box_top(width=50, border_color=C.CYAN):
+def _box_top(width=None, border_color=C.CYAN):
+    if width is None: width = get_tw()
     print(f"{border_color}╔{'═' * width}╗{C.RESET}")
 
-def _box_mid(width=50, border_color=C.CYAN):
+def _box_mid(width=None, border_color=C.CYAN):
+    if width is None: width = get_tw()
     print(f"{border_color}╠{'═' * width}╣{C.RESET}")
 
-def _box_bot(width=50, border_color=C.CYAN):
+def _box_bot(width=None, border_color=C.CYAN):
+    if width is None: width = get_tw()
     print(f"{border_color}╚{'═' * width}╝{C.RESET}")
 
 
@@ -36,7 +40,7 @@ def _spinner_check():
     frames  = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
     result  = [None]
     done    = [False]
-    width   = 50
+    width = get_tw()
 
     def fetch():
         try:
@@ -78,7 +82,7 @@ def _spinner_check():
 
 def _show_status_box(latest):
     """Show result box after check."""
-    width = 50
+    width = get_tw()
     _box_mid(width)
     if latest is None:
         _box(f"{C.YELLOW}[!]{C.RESET} Could not reach GitHub", width)
@@ -91,7 +95,7 @@ def _show_status_box(latest):
 
 def _show_telegram_box():
     """Show Telegram channel box with countdown."""
-    width = 50
+    width = get_tw()
     print()
     _box_top(width)
     _box(f"{C.YELLOW}Join our Telegram Channel!{C.RESET}", width)
@@ -130,7 +134,7 @@ def check_and_update():
 
 def _do_update(latest):
     """Pull latest files from GitHub using git."""
-    width    = 50
+    width = get_tw()
     tool_dir = os.path.dirname(os.path.abspath(__file__))
 
     print()
