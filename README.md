@@ -1,6 +1,6 @@
 # HostX — Termux HTML Host Tool
 
-> Phone storage theke HTML file serve kore local + LAN IP-তে access dey।
+> Serve HTML files from phone storage over Local & LAN network.
 
 ---
 
@@ -19,10 +19,10 @@ python main.py
 ## ⚙️ Features
 
 - ✅ Auto Update Checker (GitHub)
-- ✅ Local Web Server (phone storage theke)
-- ✅ LAN IP support (same WiFi-তে সবাই access করতে পারবে)
-- ✅ QR Code terminal-এ দেখাবে
-- ✅ Custom port select
+- ✅ Local Web Server from phone storage
+- ✅ LAN IP support (accessible from any device on same WiFi)
+- ✅ QR Code display in terminal
+- ✅ Custom port selection
 - ✅ Colorful Termux UI + ASCII Banner
 - ✅ Developer Info panel
 
