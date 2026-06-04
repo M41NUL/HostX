@@ -8,30 +8,48 @@ from config import TELEGRAM_CHANNEL, TOOL_NAME, VERSION, AUTHOR, OWNER, GITHUB_U
 # MENU
 # ============================================
 
-MENU_ITEMS = [
-    ("1", "🌐  Start Local Server",   "server"),
-    ("2", "👤  Developer Info",        "devinfo"),
-    ("3", "❌  Exit",                  "exit"),
-]
+def _get_menu_items():
+    from server import is_server_running
+    running = is_server_running()
+
+    items = [
+        ("1", "Start Local Server",  "server"),
+    ]
+
+    if running:
+        items.append(("2", "Stop Server  [RUNNING]", "stop"))
+    else:
+        items.append(("2", "Stop Server",            "stop"))
+
+    items += [
+        ("3", "Developer Info",  "devinfo"),
+        ("4", "Exit",            "exit"),
+    ]
+    return items
 
 
 def show_menu():
-    w = 50
+    from server import is_server_running
+    running = is_server_running()
+
+    w      = 50
     border = C.CYAN
 
     print(f"{border}╔{'═' * w}╗{C.RESET}")
-
-    title = f"{C.BOLD}{C.YELLOW}  MENU{C.RESET}"
-    _box_row(title, w, border)
-
+    _box_row(f"{C.BOLD}{C.YELLOW}  MENU{C.RESET}", w, border)
     print(f"{border}╠{'═' * w}╣{C.RESET}")
 
-    for num, label, _ in MENU_ITEMS:
-        content = f"  {C.CYAN}[{num}]{C.RESET}  {C.WHITE}{label}{C.RESET}"
+    for num, label, action in _get_menu_items():
+        if action == "stop" and running:
+            color = C.GREEN
+        elif action == "stop":
+            color = C.DIM + C.WHITE
+        else:
+            color = C.WHITE
+        content = f"  {C.CYAN}[{num}]{C.RESET}  {color}{label}{C.RESET}"
         _box_row(content, w, border)
 
     print(f"{border}╚{'═' * w}╝{C.RESET}")
-
     print(f"\n{C.YELLOW}  Select option: {C.RESET}", end="")
 
 
@@ -46,25 +64,27 @@ def _box_row(content, width, border_color):
 
 
 def handle_menu(choice):
-    from server import start_server
+    from server import start_server, stop_server
 
-    for num, label, action in MENU_ITEMS:
+    for num, label, action in _get_menu_items():
         if choice == num:
             if action == "server":
                 start_server()
+            elif action == "stop":
+                stop_server()
             elif action == "devinfo":
                 show_dev_info()
             elif action == "exit":
                 do_exit()
             return
 
-    print(f"\n{C.RED}[✗]{C.RESET} Invalid option. Try again.\n")
+    print(f"\n{C.RED}[x]{C.RESET} Invalid option. Try again.\n")
     input(f"{C.DIM}Press Enter...{C.RESET}")
 
 
 def show_dev_info():
     clear()
-    w = 50
+    w      = 50
     border = C.CYAN
     label  = C.YELLOW + C.BOLD
     val    = C.WHITE
@@ -79,7 +99,6 @@ def show_dev_info():
     print(f"\n{border}╔{'═' * w}╗{C.RESET}")
     _box_row(f"{C.BOLD}{C.CYAN}  Developer Information{C.RESET}", w, border)
     print(f"{border}╠{'═' * w}╣{C.RESET}")
-
     spacer()
     row("Name    :", AUTHOR)
     row("Brand   :", OWNER)
@@ -92,7 +111,6 @@ def show_dev_info():
     row("YouTube :", YOUTUBE)
     row("WhatsApp:", WHATSAPP)
     spacer()
-
     print(f"{border}╠{'═' * w}╣{C.RESET}")
     _box_row(f"  {C.DIM}{COPYRIGHT}{C.RESET}", w, border)
     print(f"{border}╚{'═' * w}╝{C.RESET}\n")
@@ -101,6 +119,11 @@ def show_dev_info():
 
 
 def do_exit():
+    from server import is_server_running, stop_server as _stop
+    if is_server_running():
+        print(f"\n{C.YELLOW}[!]{C.RESET} Stopping running server before exit...")
+        _stop()
+
     clear()
     print(f"\n{C.CYAN}  Redirecting to Telegram Channel...{C.RESET}")
     print(f"  {C.YELLOW}{TELEGRAM_CHANNEL}{C.RESET}\n")
