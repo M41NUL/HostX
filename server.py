@@ -75,15 +75,22 @@ def start_server():
     print(f"{C.YELLOW}{C.BOLD}  Start Local Server{C.RESET}")
     print(f"{C.CYAN}{'─' * 52}{C.RESET}")
 
-    # --- Folder path ---
-    print(f"  {C.DIM}Example : /sdcard/mysite  |  /sdcard/Download/web{C.RESET}")
-    print(f"  {C.WHITE}Folder path (Enter for /sdcard): {C.RESET}", end="")
-    folder = input().strip()
-    if not folder:
-        folder = DEFAULT_DIR
+    # --- Folder or File path ---
+    print(f"  {C.DIM}Example : /sdcard/mysite  |  /sdcard/test.html{C.RESET}")
+    print(f"  {C.WHITE}Folder or File path (Enter for /sdcard): {C.RESET}", end="")
+    path_input = input().strip()
+    if not path_input:
+        path_input = DEFAULT_DIR
 
-    if not os.path.isdir(folder):
-        print(f"\n{C.RED}[x]{C.RESET} Folder not found: {C.YELLOW}{folder}{C.RESET}\n")
+    if os.path.isfile(path_input):
+        # Single file — serve its parent folder, open file directly
+        folder    = os.path.dirname(os.path.abspath(path_input))
+        open_file = os.path.basename(path_input)
+    elif os.path.isdir(path_input):
+        folder    = path_input
+        open_file = None
+    else:
+        print(f"\n{C.RED}[x]{C.RESET} Path not found: {C.YELLOW}{path_input}{C.RESET}\n")
         input(f"{C.DIM}  Press Enter to go back...{C.RESET}")
         return
 
@@ -121,8 +128,15 @@ def start_server():
     local_url = f"http://localhost:{port}"
     lan_url   = f"http://{local_ip}:{port}"
 
+    if open_file:
+        local_url = f"http://localhost:{port}/{open_file}"
+        lan_url   = f"http://{local_ip}:{port}/{open_file}"
+
     print(f"\n{C.GREEN}[+]{C.RESET} Server started!\n")
-    print(f"  {C.CYAN}Folder   :{C.RESET} {folder}")
+    if open_file:
+        print(f"  {C.CYAN}File     :{C.RESET} {path_input}")
+    else:
+        print(f"  {C.CYAN}Folder   :{C.RESET} {folder}")
     print(f"  {C.CYAN}Local    :{C.RESET} {C.YELLOW}{local_url}{C.RESET}")
     print(f"  {C.CYAN}LAN      :{C.RESET} {C.YELLOW}{lan_url}{C.RESET}")
 
